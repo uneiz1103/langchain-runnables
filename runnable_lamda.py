@@ -1,12 +1,35 @@
-from langchain_core.runnables import RunnableSequence, RunnableParallel, RunnableLambda
+from langchain_openai import ChatOpenAI
+from langchain_core.prompts import PromptTemplate
+from langchain_core.output_parsers import StrOutputParser
+from langchain_core.runnables import RunnableParallel, RunnableSequence, RunnablePassthrough, RunnableLambda
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def word_count(text):
     return len(text.split())
 
+prompt = PromptTemplate(
+    template='Write a joke about {topic}',
+    input_variables=['topic']
+)
 
-runnable_word_counter = RunnableLambda(word_count)
+model = ChatOpenAI()
 
-result = runnable_word_counter.invoke("Hii there how are you , whats going !!")
+parser = StrOutputParser()
 
-print(result)
+joke_gen_chain = RunnableSequence(prompt, model, parser)
 
+parallel_chain = RunnableParallel(
+    {
+    'joke': RunnablePassthrough(),
+    'word_count': RunnableLambda(word_count)
+    }
+)
+
+final_chain =RunnableSequence(joke_gen_chain , parallel_chain)
+
+result = final_chain.invoke({'topic': 'AI'})
+
+print(result['joke'])
+print(result['word_count'])

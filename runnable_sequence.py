@@ -20,10 +20,14 @@ prompt2 = PromptTemplate(
 
 parser = StrOutputParser()
 
-chain = prompt1 | model | parser | prompt2 | model | parser
+
+chain = RunnableSequence(prompt1 , model, parser, prompt2, model, parser)
+
+# Recommended (Better Style)
+# chain = prompt1 | model | parser | prompt2 | model | parser
 
 result = chain.invoke({'topic': 'AI'})
 
 print(result)
 
-# chain = RunnableSequence(prompt1 , model, parser, prompt2, model, parser)
+
